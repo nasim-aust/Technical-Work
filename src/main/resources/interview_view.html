@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interview Details</title>
+    <style>
+    input[type= text]{width:200px; height:35px; border:1px solid blue; margin-right:15px; border-radius: 5px; color: black;}
+    label{color: black;}
+    button{width: 80px;height: 36px;color: green;padding: 5px;border-radius: 5px; }
+    .sortBtn{width:150px;height:45px;border-radius:15px;font-size:12px;padding:5px;color:#000;transition:all 1s ease;}
+    .sortBtn:hover{color:#fff;background:#000;cursor:pointer;}
+    table{width:650px;text-align:center;margin:50px auto;background-color:#ddd;}
+    table, th, td{border-collapse:collapse;border:2px solid black;	}
+    .table_left{text-align:left}
+    .id1{background-color:#008000;color:#fff;}
+    .blue{background-color:blue;color:white;}
+    table caption{background-color:#ddd}
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>
+<script>
+function url_val(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\\+/g, '%20')) || null;
+}
+function refresh_ui(full_data){
+    var data=[];
+    $.each(full_data[0], function (index, value) {
+        data.push(value);
+    });
+    var html_table = '<table class="table table-striped" style="width: 100%">';
+    html_table += '<tr>';
+    var flag = 0;
+    $.each(data[1][0], function (index, value) {
+        html_table += '<th style="border-bottom: 1px solid #555;">' + index + '</th>';
+        if(index=='Comment'){
+            html_table += '<th style="border-bottom: 1px solid #555;">Action</th>';
+        }
+    });
+    html_table += '</tr>';
+    $.each(data[1], function (index, value) {
+        html_table += '<tr style="text-align:center;">';
+        $.each(value, function (index2, value2) {
+            html_table += '<td style="border-bottom: 1px solid #555;">' + value2 + '</td>';
+            if(index2 == "Comment"){
+                html_table += '<td style="border-bottom: 1px solid #555;"><button type="button" class="del-interview" data-id="'+data[1][index]['ID']+'">Delete</button></td>';
+            }
+        });
+        html_table += '<tr>';
+    });
+    html_table += '</table>';
+
+    var html = "<form><fieldset> <legend> This is the form of interviews </legend>";
+        html += "<label>Developer email:</label><div id='dev_email'>"+data[0][0]['Email']+"</div><br><br>";
+        html += "<label>Add New Data</label><br>";
+        html += "<input type='text' id='interviewScore' placeholder='Write interviewer Score'>";
+        html += "<input type='text' id='interviewComment' placeholder='Comment'>";
+        html += "<button type='button' id='addInterview'>Submit</button><br><br>";
+        html += "<label>Sort Interviewer List by Score in</label>";
+        html += "<div id='table-ctn'>"+html_table+"</div>";
+        html += "<button type='button' class='sortBtn' id='ascSort'>Ascending Order</button>";
+        html += "<button type='button' class='sortBtn' id='descSort'>Descending Order</button>"
+        html += "<button type='button' class='sortBtn' id='resetSort'>Reset Sort</button>";
+        html += "<a href='?action=developer_ui'><button type='button' class='sortBtn' id='resetSort'>Back to developer list</button></a><br>";
+        html += "</fieldset></form>";
+
+    $('#container').html(html);
+}
+$('#container').on('click', '#addInterview', function(){
+    var btn = $(this);
+    var score_in = $('#interviewScore');
+    var comment_in = $('#interviewComment');
+    var score = score_in.val();
+    var comment = comment_in.val();
+    var dev_id = url_val('id');
+    var count = url_val('count');
+    var sort = url_val('sort');
+    var sort_seg = (sort)?'sort='+sort+'&' : '';
+    var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+    if(score_in.val().length < 1){
+        score_in.css('border-color', 'red');
+    }
+    else if(comment_in.val().length < 1){
+        comment_in.css('border-color', 'red');
+    }
+    else {
+        btn.prop('disabled', true);
+        $.ajax({
+            url: '/',
+            type: 'PUT',
+            data: {'api_key': '123456', 'action': 'add_interview', 'id': dev_id, 'score': score, 'comment': comment}
+        }).done(function (data) {
+            $.ajax({
+                url: '?api_key=123456&action=retrieve_interviews&' + count_seg + sort_seg + 'id=' + dev_id + '',
+                type: 'GET'
+            }).done(function (full_data) {
+                if (full_data[0]['status'] == 'failed') {
+                    $('#container').html('No Developer Found!');
+                }
+                else {
+                    refresh_ui(full_data);
+                }
+            });
+        });
+    }
+});
+$('#container').on('click', '.del-interview', function(){
+   var btn = $(this);
+   var id = btn.data('id');
+   var dev_id = url_val('id');
+   var count = url_val('count');
+   var sort = url_val('sort');
+   var sort_seg = (sort)?'sort='+sort+'&' : '';
+   var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+   btn.prop('disabled', true);
+   $.ajax({
+       url: '/',
+       type: 'DELETE',
+       data: {'api_key':'123456', 'action':'delete_interview', 'id':id}
+   }).done(function(data){
+       $.ajax({
+           url: '?api_key=123456&action=retrieve_interviews&'+count_seg+sort_seg+'id='+dev_id+'', type: 'GET'
+       }).done(function(full_data){
+           if(full_data[0]['status'] == 'failed') {
+               $('#container').html('No Developer Found!');
+           }
+           else {
+               refresh_ui(full_data);
+           }
+       });
+   });
+});
+$('#container').on('click', '#ascSort', function(){
+    var dev_id = url_val('id');
+    var count = url_val('count');
+    var sort = url_val('sort');
+    var sort_seg = 'sort=ASC&';
+    var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+    $.ajax({
+        url: '?api_key=123456&action=retrieve_interviews&'+count_seg+sort_seg+'id='+dev_id+'', type: 'GET'
+    }).done(function(full_data){
+        if(full_data[0]['status'] == 'failed') {
+            $('#container').html('No Developer Found!');
+        }
+        else {
+            refresh_ui(full_data);
+        }
+    });
+});
+$('#container').on('click', '#descSort', function(){
+    var dev_id = url_val('id');
+    var count = url_val('count');
+    var sort = url_val('sort');
+    var sort_seg = 'sort=DESC&';
+    var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+    $.ajax({
+        url: '?api_key=123456&action=retrieve_interviews&'+count_seg+sort_seg+'id='+dev_id+'', type: 'GET'
+    }).done(function(full_data){
+        if(full_data[0]['status'] == 'failed') {
+            $('#container').html('No Developer Found!');
+        }
+        else {
+            refresh_ui(full_data);
+        }
+    });
+});
+$('#container').on('click', '#resetSort', function(){
+    var dev_id = url_val('id');
+    var count = url_val('count');
+    var sort = url_val('sort');
+    var sort_seg = '';
+    var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+    $.ajax({
+        url: '?api_key=123456&action=retrieve_interviews&'+count_seg+sort_seg+'id='+dev_id+'', type: 'GET'
+    }).done(function(full_data){
+        if(full_data[0]['status'] == 'failed') {
+            $('#container').html('No Developer Found!');
+        }
+        else {
+            refresh_ui(full_data);
+        }
+    });
+});
+$(document).ready(function(){
+    var dev_id = url_val('id');
+    var count = url_val('count');
+    var sort = url_val('sort');
+    var sort_seg = (sort)?'sort='+sort+'&' : '';
+    var count_seg = (count)?'count='+count+'&' : 'count=10&';
+
+    $.ajax({
+        url: '?api_key=123456&action=retrieve_interviews&'+count_seg+sort_seg+'id='+dev_id+'', type: 'GET'
+    }).done(function(full_data){
+        if(full_data[0]['status'] == 'failed') {
+            $('#container').html('No Developer Found!');
+        }
+        else {
+            refresh_ui(full_data);
+        }
+    });
+});
+</script>
+</body>
+</html>

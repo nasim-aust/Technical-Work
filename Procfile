@@ -1,0 +1,1 @@
+web: build/install/DevCenter/bin/DevCenter

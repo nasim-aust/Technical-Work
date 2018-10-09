@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang='en_US'>
+<head>
+    <title>Developer List</title>
+    <style>
+        #main-container{width: 1024px; max-width: 1280px; min-height: 800px; background-color: #f0f0f0; margin: auto; }
+    </style>
+</head>
+<body>
+<div id='main-container'>
+    <form method="GET" action="?action=developer_ui">
+        <input type="text" name="action" value="developer_ui" hidden>
+        <select name="count"><option value="1">1</option><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select>
+        <input type="text" name="lang" placeholder="Language">
+        <input type="text" name="plang" placeholder="Programming Language">
+        <input type="submit" value="Submit">
+    </form>
+<div id="container"></div>
+</div>
+<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>
+<script>
+function url_val(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\\+/g, '%20')) || null;
+}
+function get_dev_url(){
+    var lang = url_val('lang'), plang = url_val('plang'), count = url_val('count');
+    if(count && plang && lang){ return '?api_key=123456&action=retrieve_developer&count='+count+'&plang='+plang+'&lang='+lang; }
+    else if(count && lang){ return '?api_key=123456&action=retrieve_developer&count='+count+'&lang='+lang; }
+    else if(count && plang){ return '?api_key=123456&action=retrieve_developer&count='+count+'&plang='+plang; }
+    else if(count){ return '?api_key=123456&action=retrieve_developer&count='+count; }
+    else{ return '?api_key=123456&action=retrieve_developer&count=10'; }
+}
+$(document).ready(function(){
+    $.ajax({
+        url: get_dev_url(),
+        type: 'GET'
+    }).done(function(data){
+        var html = '<table class="table table-striped" style="width: 100%">';
+        html += '<tr>';
+        var flag = 0;
+        $.each(data[0], function(index, value){
+            html += '<th style="border-bottom: 1px solid #555;">'+index+'</th>';
+        });
+        html += '</tr>';
+        $.each(data, function(index, value){
+            html += '<tr style="text-align:center;">';
+            $.each(value, function(index2, value2){
+                if(index2 == 'Email'){
+                    html += '<td style="border-bottom: 1px solid #555;"><a href="?action=interview_ui&id='+data[index]['ID']+'">'+value2+'</a></td>';
+                }
+                else{
+                    html += '<td style="border-bottom: 1px solid #555;">'+value2+'</td>';
+                }
+            });
+            html += '<tr>';
+        });
+        html += '</table>';
+        $('#container').html(html);
+
+    });
+});
+</script>
+</body>
+</html>
