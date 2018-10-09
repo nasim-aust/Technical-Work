@@ -12,16 +12,16 @@ public class Model {
     private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
-    private String DBName = "devcenter";
+    private String DBName = "dev_center";
     private String DBUser = "root";
     private String DBPassword = "";
-    //private String DBName = "heroku_be826f701685add";
-    //private String DBUser = "b363f5860f72e3";
-    //private String DBPassword = "94e5fe61";
+    //private String DBName = "heroku_81c6003783d7d01";
+    //private String DBUser = "b313c62a518843";
+    //private String DBPassword = "e5f66dce";
 
     public Model() throws Exception {
         try {
-            connect = DriverManager.getConnection("jdbc:mysql://b363f5860f72e3:94e5fe61@us-cdbr-iron-east-01.cleardb.net/heroku_be826f701685add?reconnect=true");
+            connect = DriverManager.getConnection("jdbc:mysql://b313c62a518843:e5f66dce@us-cdbr-iron-east-01.cleardb.net/heroku_81c6003783d7d01?reconnect=true");
             //connect = DriverManager.getConnection("jdbc:mysql://localhost/"+DBName+"?user="+this.DBUser+"&password="+this.DBPassword);
         } catch (Exception e) {
             throw e;
