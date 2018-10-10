@@ -15,9 +15,7 @@ public class Model {
     private String DBName = "dev_center";
     private String DBUser = "root";
     private String DBPassword = "";
-    //private String DBName = "heroku_81c6003783d7d01";
-    //private String DBUser = "b313c62a518843";
-    //private String DBPassword = "e5f66dce";
+
 
     public Model() throws Exception {
         try {

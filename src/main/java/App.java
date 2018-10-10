@@ -1,5 +1,7 @@
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Map;
+import java.util.TimerTask;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
@@ -152,6 +154,18 @@ public class App extends HttpServlet {
                         }
                     } else {
                         resp.getWriter().print("[{\"status\":\"failed\",\"error\":\"Invalid parameter list!\"}]");
+                    }
+                }
+                else if (action != null && !action.isEmpty() && action.equals("seed_developer")) {
+                    try {
+                        Model m = new Model();
+                        String email = "test@user.com";
+                        String plang = "Java";
+                        String lang = "jp";
+                        String response = m.create_developer(email, plang, lang);
+                        resp.getWriter().print(response);
+                    } catch (Exception e) {
+                        resp.getWriter().print("[{\"status\":\"failed\",\"error\":\"System error While connecting Database\"}]");
                     }
                 }
                 else {
